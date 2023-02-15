@@ -1,0 +1,8 @@
+spring:
+  security:
+    user:
+      name: root
+      password: root
+  #设置thymeleaf 缓存
+  thymeleaf:
+    cache: false
