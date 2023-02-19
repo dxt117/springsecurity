@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="userDetailsDemo" />
         <module name="quickstart" />
+        <module name="verifyDemo" />
         <module name="tokenDemo" />
       </profile>
     </annotationProcessing>
@@ -18,6 +19,7 @@
       <module name="quickstart" options="-parameters" />
       <module name="tokenDemo" options="-parameters" />
       <module name="userDetailsDemo" options="-parameters" />
+      <module name="verifyDemo" options="-parameters" />
     </option>
   </component>
 </project>
