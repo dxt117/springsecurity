@@ -17,6 +17,7 @@
         <module>tokenDemo</module>
         <module>userDetailsDemo</module>
         <module>verifyDemo</module>
+        <module>passwordEncodeDemo</module>
     </modules>
 
     <properties>
