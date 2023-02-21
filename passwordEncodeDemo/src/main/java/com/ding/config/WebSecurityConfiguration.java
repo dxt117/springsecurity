@@ -24,7 +24,6 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
-import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.util.ObjectUtils;
 
@@ -40,7 +39,6 @@ import java.util.UUID;
 public class WebSecurityConfiguration {
 
     private final UserDao userDao;
-
     //全局认证管理器
     private final AuthenticationConfiguration authenticationConfiguration;
     private final DataSource dataSource;
@@ -111,9 +109,10 @@ public class WebSecurityConfiguration {
         //开启记住我功能
         http.rememberMe(httpSecurityRememberMeConfigurer -> {
             httpSecurityRememberMeConfigurer
+                    .rememberMeServices(rememberMeServices()) //设置自动登录使用哪个 rememberMeServices
                     .tokenRepository(persistentTokenRepository())//设置自动登录持久化存储
                     .tokenValiditySeconds(3600)//设置过期时间 毫秒数
-                    .userDetailsService(userDetailsService());
+                    .userDetailsService(userDetailsService());//设置自动登陆 的登陆逻辑处理
         });
         //用户详细信息处理  处理登录逻辑
         http.userDetailsService(userDetailsService());
@@ -133,6 +132,8 @@ public class WebSecurityConfiguration {
         verifyFilter.setCaptchaParameter("captcha");
         //3.指定认证管理器
         verifyFilter.setAuthenticationManager(authenticationManager());
+        //设置认证成功时使用自定义rememberMeService
+        verifyFilter.setRememberMeServices(rememberMeServices());
         //4.指定认证成功时处理
         verifyFilter.setAuthenticationSuccessHandler(authenticationSuccessHandler());
         //5.认证失败处理
@@ -149,17 +150,20 @@ public class WebSecurityConfiguration {
     //使用持久化令牌 实现记住我
     @Bean
     public RememberMeServices rememberMeServices() {
-        return new PersistentTokenBasedRememberMeServices(
+        return new RememberMeService(
                 UUID.randomUUID().toString(),//参数 1: 自定义一个生成令牌 key 默认 UUID
                 userDetailsService(), //参数 2:认证数据源
-                persistentTokenRepository());//参数 3:令牌存储方式
+                persistentTokenRepository()//参数 3:令牌存储方式
+        );
     }
 
     //生成持久化令牌数据库
     @Bean
     public PersistentTokenRepository persistentTokenRepository() {
         JdbcTokenRepositoryImpl jdbcTokenRepository = new JdbcTokenRepositoryImpl();
-        jdbcTokenRepository.setCreateTableOnStartup(false);//只需要没有表时设置为 true 会自动生成remember表
+        //自动建表，第一次启动时需要，第二次启动时注释掉
+        //jdbcTokenRepositoryImpl.setCreateTableOnStartup(true);
+//        jdbcTokenRepository.setCreateTableOnStartup(false);//只需要没有表时设置为 true 会自动生成remember表
         jdbcTokenRepository.setDataSource(dataSource);
         return jdbcTokenRepository;
     }
